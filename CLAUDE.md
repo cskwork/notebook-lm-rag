@@ -51,4 +51,5 @@ cd "C:\Users\a\.claude\skills\notebooklm-skill"
 - docx module must be installed locally: `npm install docx`
 - UI 언어 설정은 localStorage 키 `ui-language`로 관리
 - assistant 마크다운 렌더링은 react-markdown + remark-gfm + rehype-sanitize + rehype-highlight 조합
+- NotebookLM 도구 출력은 응답과 분리해 thinking으로 저장하면 채팅 본문에 JSON이 노출되지 않음
 </insight>

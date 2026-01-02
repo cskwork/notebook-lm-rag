@@ -20,6 +20,7 @@ interface BackendSession {
     id: string;
     question: string;
     answer: string;
+    thinking?: string;
     timestamp: string;
   }>;
   documentPath?: string;
@@ -29,6 +30,7 @@ interface BackendSession {
 
 interface BackendMessageResponse {
   response: string;
+  thinking?: string;
   qaEntry?: {
     id: string;
     question: string;
@@ -71,7 +73,7 @@ class ApiService {
           timestamp: qa.timestamp,
         });
         // Assistant message - answer와 메타데이터 분리
-        const { content, thinking } = this.parseNotebookResponse(qa.answer);
+        const { content, thinking } = this.parseNotebookResponse(qa.answer, qa.thinking);
         messages.push({
           id: `${qa.id}-a`,
           role: 'assistant',
@@ -129,7 +131,10 @@ class ApiService {
   }
 
   // NotebookLM 쿼리 응답에서 answer와 메타데이터 분리
-  private parseNotebookResponse(responseText: string): { content: string; thinking?: string } {
+  private parseNotebookResponse(responseText: string, thinking?: string): { content: string; thinking?: string } {
+    if (thinking) {
+      return { content: responseText, thinking };
+    }
     try {
       // JSON 응답인지 확인 (NotebookLM 쿼리 결과)
       const parsed = JSON.parse(responseText);
@@ -162,7 +167,7 @@ class ApiService {
     };
 
     // 응답에서 answer와 메타데이터 분리
-    const { content, thinking } = this.parseNotebookResponse(response.response);
+    const { content, thinking } = this.parseNotebookResponse(response.response, response.thinking);
 
     const assistantMessage: Message = {
       id: response.qaEntry?.id ? `${response.qaEntry.id}-a` : `msg-${Date.now()}-a`,

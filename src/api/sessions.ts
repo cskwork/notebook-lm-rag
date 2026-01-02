@@ -104,6 +104,7 @@ sessionsRouter.post('/:id/message', async (req: Request, res: Response) => {
 
     res.json({
       response: result.response,
+      thinking: result.thinking,
       qaEntry: result.qaEntry ? {
         id: result.qaEntry.id,
         question: result.qaEntry.question,

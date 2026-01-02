@@ -34,6 +34,7 @@ export class SessionManager {
   async sendMessage(sessionId: string, userMessage: string): Promise<{
     response: string;
     qaEntry?: QAEntry;
+    thinking?: string;
   }> {
     const session = sessionStore.get(sessionId);
     if (!session) {
@@ -51,6 +52,7 @@ export class SessionManager {
 
     // Claude Agent SDK로 쿼리
     let responseText = '';
+    const toolOutputs: string[] = [];
     let newSessionId: string | undefined;
 
     for await (const msg of query({
@@ -87,11 +89,11 @@ export class SessionManager {
         if (Array.isArray(toolResult)) {
           for (const block of toolResult) {
             if (block.type === 'text' && block.text) {
-              responseText += '\n' + block.text;
+              toolOutputs.push(block.text);
             }
           }
         } else if (typeof msg.tool_use_result === 'string') {
-          responseText += '\n' + msg.tool_use_result;
+          toolOutputs.push(msg.tool_use_result);
         }
       }
     }
@@ -102,17 +104,19 @@ export class SessionManager {
     }
 
     // Q&A 엔트리 추가
+    const thinkingText = toolOutputs.length > 0 ? toolOutputs.join('\n') : undefined;
     let qaEntry: QAEntry | undefined;
     if (responseText && !responseText.toLowerCase().includes('error')) {
       qaEntry = sessionStore.addQAEntry(sessionId, {
         question: userMessage,
         answer: responseText,
         notebookId: session.notebookId,
-        notebookName: session.notebookName
+        notebookName: session.notebookName,
+        thinking: thinkingText
       });
     }
 
-    return { response: responseText, qaEntry };
+    return { response: responseText, qaEntry, thinking: thinkingText };
   }
 
   async generateDocument(sessionId: string, options?: {
@@ -161,7 +165,8 @@ Please use the generate_document tool now.`;
     console.log('[generateDocument] Response preview:', result.response.substring(0, 500));
 
     // 응답에서 문서 경로 추출
-    const pathMatch = result.response.match(/"path":\s*"([^"]+)"/);
+    const combinedText = [result.response, result.thinking].filter(Boolean).join('\n');
+    const pathMatch = combinedText.match(/"path":\s*"([^"]+)"/);
     if (pathMatch) {
       const docPath = pathMatch[1];
       sessionStore.update(sessionId, {

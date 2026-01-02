@@ -5,6 +5,7 @@ export interface QAEntry {
   notebookId: string;
   notebookName: string;
   sources?: string[];
+  thinking?: string;
   timestamp: Date;
 }
 

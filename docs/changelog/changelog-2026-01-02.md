@@ -92,6 +92,20 @@ NotebookLM 쿼리 응답이 JSON 형태로 전체 표시되어 가독성 저하
 
 ---
 
+## 쿼리 응답 표시 개선
+
+### 수정된 파일
+- `src/session/session-manager.ts` - 도구 출력은 thinking으로 분리하고 응답 텍스트는 최종 답변만 유지
+- `src/api/sessions.ts` - 메시지 응답에 thinking 필드 포함
+- `client/src/services/api.ts` - thinking 필드 우선 사용 및 JSON 파싱 안전장치
+- `src/session/types.ts` - QAEntry에 thinking 필드 추가
+
+### 동작
+- 도구 출력(JSON 포함)은 Query Details 영역에만 표시
+- 채팅 본문에는 최종 답변만 표시
+
+---
+
 ## UI 다국어 전환 및 오류 메시지 매핑
 
 ### 추가된 파일
