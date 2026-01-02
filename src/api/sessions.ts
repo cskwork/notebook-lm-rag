@@ -146,3 +146,18 @@ sessionsRouter.post('/:id/generate-doc', async (req: Request, res: Response) => 
     res.status(500).json({ error: (error as Error).message });
   }
 });
+
+// DELETE /api/sessions/:id - 세션 삭제
+sessionsRouter.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    const deleted = sessionManager.deleteSession(req.params.id);
+
+    if (!deleted) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    res.json({ success: true, message: 'Session deleted' });
+  } catch (error) {
+    res.status(500).json({ error: (error as Error).message });
+  }
+});

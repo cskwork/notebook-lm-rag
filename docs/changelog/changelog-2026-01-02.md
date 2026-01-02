@@ -32,3 +32,33 @@
 - React 19 + TypeScript
 - Tailwind CSS 3
 - Vite 7
+
+---
+
+## 버그 수정 - 문서 생성 시 경로 누락 오류
+
+### 문제
+문서 생성 시 `"Failed to generate document - no path in response"` 오류 발생
+
+### 원인
+`session-manager.ts`의 `sendMessage` 메서드가 assistant 메시지 텍스트만 캡처하고, Claude Agent SDK의 tool_use_result 필드를 캡처하지 않음
+
+### 수정
+- `src/session/session-manager.ts` - user 메시지의 tool_use_result 필드 캡처 로직 추가
+
+---
+
+## 세션 지속성 및 초기화 기능
+
+### 기능
+- localStorage에 세션 상태 저장 (브라우저 새로고침 후에도 유지)
+- "Reset Chat" 버튼으로 세션 초기화 (프론트엔드 + 백엔드 모두 삭제)
+- Claude Agent SDK에 최근 3개 Q&A만 컨텍스트로 전송 (토큰 효율화)
+
+### 수정된 파일
+- `client/src/hooks/useResearchSession.ts` - localStorage 저장/복원 + resetSession 함수
+- `client/src/components/Sidebar.tsx` - Reset Chat 버튼 추가
+- `client/src/App.tsx` - resetSession 연결
+- `client/src/services/api.ts` - deleteSession API 추가
+- `src/session/session-manager.ts` - 컨텍스트 최근 3개 제한 + deleteSession 메서드
+- `src/api/sessions.ts` - DELETE /:id 엔드포인트 추가

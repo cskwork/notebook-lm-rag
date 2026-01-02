@@ -1,8 +1,15 @@
 // 연구 세션 관리 훅
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Notebook, Session, Message } from '../types';
 import type { ToastMessage } from '../components';
 import { api } from '../services/api';
+
+const STORAGE_KEY = 'research-session';
+
+interface StoredState {
+  session: Session | null;
+  selectedNotebook: Notebook | null;
+}
 
 interface UseResearchSessionReturn {
   notebooks: Notebook[];
@@ -19,6 +26,7 @@ interface UseResearchSessionReturn {
   generateDocument: () => Promise<void>;
   downloadDocument: () => Promise<void>;
   dismissToast: (id: string) => void;
+  resetSession: () => Promise<void>;
 }
 
 export function useResearchSession(): UseResearchSessionReturn {
@@ -30,6 +38,33 @@ export function useResearchSession(): UseResearchSessionReturn {
   const [isSendingMessage, setIsSendingMessage] = useState(false);
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const isInitialLoad = useRef(true);
+
+  // localStorage에서 상태 복원
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const { session: storedSession, selectedNotebook: storedNotebook } = JSON.parse(stored) as StoredState;
+        if (storedSession) setSession(storedSession);
+        if (storedNotebook) setSelectedNotebook(storedNotebook);
+      }
+    } catch (error) {
+      console.error('Failed to load session from localStorage:', error);
+    }
+    isInitialLoad.current = false;
+  }, []);
+
+  // localStorage에 상태 저장
+  useEffect(() => {
+    if (isInitialLoad.current) return;
+    try {
+      const state: StoredState = { session, selectedNotebook };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.error('Failed to save session to localStorage:', error);
+    }
+  }, [session, selectedNotebook]);
 
   // 토스트 추가 헬퍼
   const addToast = useCallback((type: ToastMessage['type'], message: string) => {
@@ -169,6 +204,22 @@ export function useResearchSession(): UseResearchSessionReturn {
     }
   }, [session, addToast]);
 
+  // 세션 초기화
+  const resetSession = useCallback(async () => {
+    try {
+      if (session) {
+        await api.deleteSession(session.id);
+      }
+      setSession(null);
+      setSelectedNotebook(null);
+      localStorage.removeItem(STORAGE_KEY);
+      addToast('success', 'Session reset');
+    } catch (error) {
+      console.error('Failed to reset session:', error);
+      addToast('error', error instanceof Error ? error.message : 'Failed to reset session');
+    }
+  }, [session, addToast]);
+
   return {
     notebooks,
     selectedNotebook,
@@ -184,5 +235,6 @@ export function useResearchSession(): UseResearchSessionReturn {
     generateDocument,
     downloadDocument,
     dismissToast,
+    resetSession,
   };
 }

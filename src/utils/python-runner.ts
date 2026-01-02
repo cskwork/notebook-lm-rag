@@ -12,8 +12,7 @@ export function runPythonScript(scriptName: string, args: string[]): Promise<Pyt
     const scriptPath = `${CONFIG.NOTEBOOKLM_SKILL_DIR}\\scripts\\${scriptName}`;
 
     const proc = spawn(pythonPath, [scriptPath, ...args], {
-      cwd: CONFIG.NOTEBOOKLM_SKILL_DIR,
-      shell: true
+      cwd: CONFIG.NOTEBOOKLM_SKILL_DIR
     });
 
     let stdout = '';

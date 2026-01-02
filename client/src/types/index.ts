@@ -14,6 +14,7 @@ export interface Message {
   content: string;
   timestamp: string;
   sources?: Source[];
+  thinking?: string; // 쿼리 메타데이터 (접힌 상태로 표시)
 }
 
 export interface Source {

@@ -119,6 +119,13 @@ class ApiService {
     return this.transformSession(response.session);
   }
 
+  // 세션 삭제
+  async deleteSession(sessionId: string): Promise<void> {
+    await this.request<{ success: boolean }>(`/sessions/${sessionId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // 메시지 전송
   async sendMessage(sessionId: string, data: SendMessageRequest): Promise<{ userMessage: Message; assistantMessage: Message }> {
     const response = await this.request<BackendMessageResponse>(`/sessions/${sessionId}/message`, {

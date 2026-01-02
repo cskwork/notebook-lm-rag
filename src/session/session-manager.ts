@@ -40,8 +40,8 @@ export class SessionManager {
       throw new Error(`Session ${sessionId} not found`);
     }
 
-    // 이전 대화 컨텍스트 구성
-    const contextMessages = session.qaHistory.map(qa =>
+    // 이전 대화 컨텍스트 구성 (최근 3개만 사용)
+    const contextMessages = session.qaHistory.slice(-3).map(qa =>
       `Q: ${qa.question}\nA: ${qa.answer}`
     ).join('\n\n');
 
@@ -76,6 +76,22 @@ export class SessionManager {
           if ('text' in block) {
             responseText += block.text;
           }
+        }
+      }
+
+      // 도구 결과 캡처 (generate_document 등)
+      if (msg.type === 'user' && msg.tool_use_result) {
+        console.log('[sendMessage] Captured tool_use_result:', JSON.stringify(msg.tool_use_result).substring(0, 200));
+        // tool_use_result는 [{type: 'text', text: '...'}] 형태
+        const toolResult = msg.tool_use_result as Array<{type: string; text?: string}>;
+        if (Array.isArray(toolResult)) {
+          for (const block of toolResult) {
+            if (block.type === 'text' && block.text) {
+              responseText += '\n' + block.text;
+            }
+          }
+        } else if (typeof msg.tool_use_result === 'string') {
+          responseText += '\n' + msg.tool_use_result;
         }
       }
     }
@@ -140,6 +156,10 @@ Please use the generate_document tool now.`;
 
     const result = await this.sendMessage(sessionId, generatePrompt);
 
+    // 디버그: 응답 내용 확인
+    console.log('[generateDocument] Response length:', result.response.length);
+    console.log('[generateDocument] Response preview:', result.response.substring(0, 500));
+
     // 응답에서 문서 경로 추출
     const pathMatch = result.response.match(/"path":\s*"([^"]+)"/);
     if (pathMatch) {
@@ -157,6 +177,10 @@ Please use the generate_document tool now.`;
 
   getSession(sessionId: string): ChatSession | undefined {
     return sessionStore.get(sessionId);
+  }
+
+  deleteSession(sessionId: string): boolean {
+    return sessionStore.delete(sessionId);
   }
 
   listSessions(): ChatSession[] {

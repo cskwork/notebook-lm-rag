@@ -18,6 +18,7 @@ function App() {
     generateDocument,
     downloadDocument,
     dismissToast,
+    resetSession,
   } = useResearchSession();
 
   return (
@@ -36,6 +37,7 @@ function App() {
           onCreateSession={createSession}
           onGenerateDoc={generateDocument}
           onDownloadDoc={downloadDocument}
+          onResetSession={resetSession}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">
