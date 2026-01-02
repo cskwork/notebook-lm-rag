@@ -1,0 +1,210 @@
+// 사이드바 컴포넌트 - 노트북 선택 및 세션 컨트롤
+import type { Notebook, Session } from '../types';
+
+interface SidebarProps {
+  notebooks: Notebook[];
+  selectedNotebook: Notebook | null;
+  session: Session | null;
+  isLoadingNotebooks: boolean;
+  isCreatingSession: boolean;
+  isGeneratingDoc: boolean;
+  onSelectNotebook: (notebook: Notebook) => void;
+  onCreateSession: () => void;
+  onGenerateDoc: () => void;
+  onDownloadDoc: () => void;
+}
+
+export function Sidebar({
+  notebooks,
+  selectedNotebook,
+  session,
+  isLoadingNotebooks,
+  isCreatingSession,
+  isGeneratingDoc,
+  onSelectNotebook,
+  onCreateSession,
+  onGenerateDoc,
+  onDownloadDoc,
+}: SidebarProps) {
+  const messageCount = session?.messages.filter((m) => m.role === 'user').length ?? 0;
+
+  return (
+    <aside className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col">
+      {/* 노트북 선택 */}
+      <div className="p-4 border-b border-gray-200">
+        <label
+          htmlFor="notebook-select"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Notebook
+        </label>
+        <select
+          id="notebook-select"
+          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm
+                     focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+                     disabled:bg-gray-100 disabled:cursor-not-allowed"
+          value={selectedNotebook?.id ?? ''}
+          onChange={(e) => {
+            const notebook = notebooks.find((n) => n.id === e.target.value);
+            if (notebook) onSelectNotebook(notebook);
+          }}
+          disabled={isLoadingNotebooks || !!session}
+        >
+          <option value="">Select a notebook...</option>
+          {notebooks.map((notebook) => (
+            <option key={notebook.id} value={notebook.id}>
+              {notebook.name}
+            </option>
+          ))}
+        </select>
+        {isLoadingNotebooks && (
+          <p className="mt-2 text-xs text-gray-500">Loading notebooks...</p>
+        )}
+      </div>
+
+      {/* 세션 정보 */}
+      <div className="p-4 border-b border-gray-200 flex-1">
+        <h3 className="text-sm font-medium text-gray-700 mb-4">Session Info</h3>
+
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Q&A Count</span>
+            <span className="text-sm font-semibold text-gray-900">{messageCount}</span>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <span className="text-sm text-gray-500">Status</span>
+            <span
+              className={`text-sm font-semibold capitalize ${
+                session?.status === 'active'
+                  ? 'text-green-600'
+                  : session?.status === 'error'
+                  ? 'text-red-600'
+                  : 'text-gray-400'
+              }`}
+            >
+              {session?.status ?? 'No session'}
+            </span>
+          </div>
+
+          {session && (
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500">Document</span>
+              <span
+                className={`text-sm font-semibold ${
+                  session.documentGenerated ? 'text-green-600' : 'text-gray-400'
+                }`}
+              >
+                {session.documentGenerated ? 'Ready' : 'Not generated'}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 액션 버튼들 */}
+      <div className="p-4 space-y-3">
+        {!session ? (
+          <button
+            onClick={onCreateSession}
+            disabled={!selectedNotebook || isCreatingSession}
+            className="w-full px-4 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg
+                       hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                       disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          >
+            {isCreatingSession ? (
+              <span className="flex items-center justify-center gap-2">
+                <LoadingSpinner />
+                Creating...
+              </span>
+            ) : (
+              'Start New Session'
+            )}
+          </button>
+        ) : (
+          <>
+            <button
+              onClick={onGenerateDoc}
+              disabled={messageCount === 0 || isGeneratingDoc}
+              className="w-full px-4 py-2.5 bg-primary-600 text-white text-sm font-medium rounded-lg
+                         hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                         disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            >
+              {isGeneratingDoc ? (
+                <span className="flex items-center justify-center gap-2">
+                  <LoadingSpinner />
+                  Generating...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  <DocumentIcon />
+                  Generate Report
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={onDownloadDoc}
+              disabled={!session.documentGenerated}
+              className="w-full px-4 py-2.5 bg-white text-gray-700 text-sm font-medium rounded-lg
+                         border border-gray-300 hover:bg-gray-50
+                         focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
+                         disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+            >
+              <span className="flex items-center justify-center gap-2">
+                <DownloadIcon />
+                Download DOCX
+              </span>
+            </button>
+          </>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function LoadingSpinner() {
+  return (
+    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  );
+}
+
+function DocumentIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+  );
+}
+
+function DownloadIcon() {
+  return (
+    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+      />
+    </svg>
+  );
+}

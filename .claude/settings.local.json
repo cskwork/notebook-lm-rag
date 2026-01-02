@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(notebooklm-skill)",
+      "Bash(\".venv\\\\Scripts\\\\python.exe\" scripts/ask_question.py --question \"What is the content of this notebook? What topics are covered? Provide a complete overview briefly and concisely\" --notebook-url \"https://notebooklm.google.com/notebook/c2085b19-1e6e-49cf-825a-e115ccfc51e1\")",
+      "Bash(\".venv\\\\Scripts\\\\python.exe\":*)",
+      "Skill(docx)",
+      "Bash(dir:*)",
+      "Bash(timeout:*)",
+      "Bash(npm create:*)"
+    ]
+  }
+}
