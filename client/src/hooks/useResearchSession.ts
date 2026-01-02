@@ -3,6 +3,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Notebook, Session, Message } from '../types';
 import type { ToastMessage } from '../components';
 import { api } from '../services/api';
+import { useLocale } from './useLocale';
 
 const STORAGE_KEY = 'research-session';
 
@@ -30,6 +31,7 @@ interface UseResearchSessionReturn {
 }
 
 export function useResearchSession(): UseResearchSessionReturn {
+  const { t, mapApiError } = useLocale();
   const [notebooks, setNotebooks] = useState<Notebook[]>([]);
   const [selectedNotebook, setSelectedNotebook] = useState<Notebook | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -77,6 +79,17 @@ export function useResearchSession(): UseResearchSessionReturn {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
+  const getErrorMessage = useCallback(
+    (error: unknown, fallback: string) => {
+      if (error instanceof Error) {
+        const mapped = mapApiError(error.message);
+        return mapped || fallback;
+      }
+      return fallback;
+    },
+    [mapApiError]
+  );
+
   // 노트북 목록 로드
   useEffect(() => {
     const loadNotebooks = async () => {
@@ -86,14 +99,14 @@ export function useResearchSession(): UseResearchSessionReturn {
         setNotebooks(data);
       } catch (error) {
         console.error('Failed to load notebooks:', error);
-        addToast('error', 'Failed to load notebooks. Is the server running?');
+        addToast('error', t.toasts.loadNotebooksFailed);
       } finally {
         setIsLoadingNotebooks(false);
       }
     };
 
     loadNotebooks();
-  }, [addToast]);
+  }, [addToast, t]);
 
   // 노트북 선택
   const selectNotebook = useCallback((notebook: Notebook) => {
@@ -108,14 +121,14 @@ export function useResearchSession(): UseResearchSessionReturn {
       setIsCreatingSession(true);
       const newSession = await api.createSession({ notebookId: selectedNotebook.id });
       setSession(newSession);
-      addToast('success', 'Session started successfully');
+      addToast('success', t.toasts.sessionStarted);
     } catch (error) {
       console.error('Failed to create session:', error);
-      addToast('error', error instanceof Error ? error.message : 'Failed to create session');
+      addToast('error', getErrorMessage(error, t.toasts.createSessionFailed));
     } finally {
       setIsCreatingSession(false);
     }
-  }, [selectedNotebook, addToast]);
+  }, [selectedNotebook, addToast, getErrorMessage, t]);
 
   // 메시지 전송
   const sendMessage = useCallback(async (message: string) => {
@@ -153,7 +166,7 @@ export function useResearchSession(): UseResearchSessionReturn {
       );
     } catch (error) {
       console.error('Failed to send message:', error);
-      addToast('error', error instanceof Error ? error.message : 'Failed to send message');
+      addToast('error', getErrorMessage(error, t.toasts.sendMessageFailed));
 
       // 실패 시 사용자 메시지 제거
       setSession((prev) =>
@@ -167,7 +180,7 @@ export function useResearchSession(): UseResearchSessionReturn {
     } finally {
       setIsSendingMessage(false);
     }
-  }, [session, addToast]);
+  }, [session, addToast, getErrorMessage, t]);
 
   // 문서 생성
   const generateDocument = useCallback(async () => {
@@ -179,17 +192,20 @@ export function useResearchSession(): UseResearchSessionReturn {
 
       if (result.success) {
         setSession((prev) => (prev ? { ...prev, documentGenerated: true } : null));
-        addToast('success', 'Report generated successfully');
+        addToast('success', t.toasts.reportGenerated);
       } else {
-        addToast('error', result.message ?? 'Failed to generate document');
+        addToast(
+          'error',
+          result.message ? mapApiError(result.message) : t.toasts.generateDocumentFailed
+        );
       }
     } catch (error) {
       console.error('Failed to generate document:', error);
-      addToast('error', error instanceof Error ? error.message : 'Failed to generate document');
+      addToast('error', getErrorMessage(error, t.toasts.generateDocumentFailed));
     } finally {
       setIsGeneratingDoc(false);
     }
-  }, [session, addToast]);
+  }, [session, addToast, getErrorMessage, mapApiError, t]);
 
   // 문서 다운로드
   const downloadDocument = useCallback(async () => {
@@ -197,12 +213,12 @@ export function useResearchSession(): UseResearchSessionReturn {
 
     try {
       await api.downloadDocument(session.id);
-      addToast('success', 'Download started');
+      addToast('success', t.toasts.downloadStarted);
     } catch (error) {
       console.error('Failed to download document:', error);
-      addToast('error', error instanceof Error ? error.message : 'Failed to download document');
+      addToast('error', getErrorMessage(error, t.toasts.downloadFailed));
     }
-  }, [session, addToast]);
+  }, [session, addToast, getErrorMessage, t]);
 
   // 세션 초기화
   const resetSession = useCallback(async () => {
@@ -213,12 +229,12 @@ export function useResearchSession(): UseResearchSessionReturn {
       setSession(null);
       setSelectedNotebook(null);
       localStorage.removeItem(STORAGE_KEY);
-      addToast('success', 'Session reset');
+      addToast('success', t.toasts.sessionReset);
     } catch (error) {
       console.error('Failed to reset session:', error);
-      addToast('error', error instanceof Error ? error.message : 'Failed to reset session');
+      addToast('error', getErrorMessage(error, t.toasts.resetFailed));
     }
-  }, [session, addToast]);
+  }, [session, addToast, getErrorMessage, t]);
 
   return {
     notebooks,

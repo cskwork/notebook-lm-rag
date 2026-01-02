@@ -1,5 +1,6 @@
 // 메시지 입력 컴포넌트
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import { useLocale } from '../hooks';
 
 interface MessageInputProps {
   onSend: (message: string) => void;
@@ -8,6 +9,7 @@ interface MessageInputProps {
 }
 
 export function MessageInput({ onSend, disabled, placeholder }: MessageInputProps) {
+  const { t } = useLocale();
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,7 +47,7 @@ export function MessageInput({ onSend, disabled, placeholder }: MessageInputProp
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder ?? 'Type your message...'}
+              placeholder={placeholder ?? t.messageInput.placeholder}
               disabled={disabled}
               rows={1}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl
@@ -61,7 +63,7 @@ export function MessageInput({ onSend, disabled, placeholder }: MessageInputProp
             className="px-4 py-3 bg-primary-600 text-white rounded-xl
                        hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2
                        disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            aria-label="Send message"
+            aria-label={t.messageInput.sendAriaLabel}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -74,7 +76,7 @@ export function MessageInput({ onSend, disabled, placeholder }: MessageInputProp
           </button>
         </div>
         <p className="text-xs text-gray-400 mt-2 text-center">
-          Press Enter to send, Shift+Enter for new line
+          {t.messageInput.hint}
         </p>
       </div>
     </div>

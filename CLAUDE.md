@@ -49,4 +49,5 @@ cd "C:\Users\a\.claude\skills\notebooklm-skill"
 - Always use Smart Add workflow: query notebook content first, then add with discovered metadata
 - Korean font: use "맑은 고딕" for Word documents
 - docx module must be installed locally: `npm install docx`
+- UI 언어 설정은 localStorage 키 `ui-language`로 관리
 </insight>

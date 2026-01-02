@@ -78,3 +78,25 @@ NotebookLM 쿼리 응답이 JSON 형태로 전체 표시되어 가독성 저하
 ### 동작
 - 응답의 실제 답변(answer)만 메인 콘텐츠로 표시
 - 쿼리 메타데이터(notebook, question, timestamp)는 "Query Details" 버튼으로 접기/펼치기
+
+---
+
+## UI 다국어 전환 및 오류 메시지 매핑
+
+### 추가된 파일
+- `client/src/i18n.ts` - 영어/한국어 번역 리소스와 오류 메시지 매핑
+- `client/src/hooks/useLocale.tsx` - 언어 상태/저장 관리 및 Provider
+
+### 수정된 파일
+- `client/src/main.tsx` - LocaleProvider 적용
+- `client/src/App.tsx` - 세션 입력 플레이스홀더 다국어 처리
+- `client/src/components/Header.tsx` - 헤더 언어 토글 및 라벨 번역
+- `client/src/components/Sidebar.tsx` - 사이드바 문자열 번역
+- `client/src/components/ChatArea.tsx` - 빈 상태/메시지 라벨 번역 및 시간 로케일 적용
+- `client/src/components/MessageInput.tsx` - 입력 라벨/힌트 번역
+- `client/src/hooks/useResearchSession.ts` - 토스트 메시지 번역 및 API 오류 한국어 매핑
+
+### 기능
+- 기본 UI 언어 영어, 헤더에서 한국어로 전환 가능 (localStorage 저장)
+- 모든 UI 텍스트 및 시간 포맷 로케일 전환
+- 알려진 API 오류 메시지 한국어 매핑

@@ -1,5 +1,6 @@
 // 사이드바 컴포넌트 - 노트북 선택 및 세션 컨트롤
 import type { Notebook, Session } from '../types';
+import { useLocale } from '../hooks';
 
 interface SidebarProps {
   notebooks: Notebook[];
@@ -28,7 +29,9 @@ export function Sidebar({
   onDownloadDoc,
   onResetSession,
 }: SidebarProps) {
+  const { t } = useLocale();
   const messageCount = session?.messages.filter((m) => m.role === 'user').length ?? 0;
+  const statusLabel = session ? t.status[session.status] : t.status.none;
 
   return (
     <aside className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col">
@@ -38,7 +41,7 @@ export function Sidebar({
           htmlFor="notebook-select"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Notebook
+          {t.sidebar.notebookLabel}
         </label>
         <select
           id="notebook-select"
@@ -52,7 +55,7 @@ export function Sidebar({
           }}
           disabled={isLoadingNotebooks || !!session}
         >
-          <option value="">Select a notebook...</option>
+          <option value="">{t.sidebar.notebookPlaceholder}</option>
           {notebooks.map((notebook) => (
             <option key={notebook.id} value={notebook.id}>
               {notebook.name}
@@ -60,22 +63,22 @@ export function Sidebar({
           ))}
         </select>
         {isLoadingNotebooks && (
-          <p className="mt-2 text-xs text-gray-500">Loading notebooks...</p>
+          <p className="mt-2 text-xs text-gray-500">{t.sidebar.loadingNotebooks}</p>
         )}
       </div>
 
       {/* 세션 정보 */}
       <div className="p-4 border-b border-gray-200 flex-1">
-        <h3 className="text-sm font-medium text-gray-700 mb-4">Session Info</h3>
+        <h3 className="text-sm font-medium text-gray-700 mb-4">{t.sidebar.sessionInfo}</h3>
 
         <div className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Q&A Count</span>
+            <span className="text-sm text-gray-500">{t.sidebar.qaCount}</span>
             <span className="text-sm font-semibold text-gray-900">{messageCount}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Status</span>
+            <span className="text-sm text-gray-500">{t.sidebar.statusLabel}</span>
             <span
               className={`text-sm font-semibold capitalize ${
                 session?.status === 'active'
@@ -83,21 +86,23 @@ export function Sidebar({
                   : session?.status === 'error'
                   ? 'text-red-600'
                   : 'text-gray-400'
-              }`}
+                }`}
             >
-              {session?.status ?? 'No session'}
+              {statusLabel}
             </span>
           </div>
 
           {session && (
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">Document</span>
+              <span className="text-sm text-gray-500">{t.sidebar.documentLabel}</span>
               <span
                 className={`text-sm font-semibold ${
                   session.documentGenerated ? 'text-green-600' : 'text-gray-400'
                 }`}
               >
-                {session.documentGenerated ? 'Ready' : 'Not generated'}
+                {session.documentGenerated
+                  ? t.sidebar.documentReady
+                  : t.sidebar.documentNotGenerated}
               </span>
             </div>
           )}
@@ -117,10 +122,10 @@ export function Sidebar({
             {isCreatingSession ? (
               <span className="flex items-center justify-center gap-2">
                 <LoadingSpinner />
-                Creating...
+                {t.sidebar.creating}
               </span>
             ) : (
-              'Start New Session'
+              t.sidebar.startSession
             )}
           </button>
         ) : (
@@ -135,12 +140,12 @@ export function Sidebar({
               {isGeneratingDoc ? (
                 <span className="flex items-center justify-center gap-2">
                   <LoadingSpinner />
-                  Generating...
+                  {t.sidebar.generating}
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">
                   <DocumentIcon />
-                  Generate Report
+                  {t.sidebar.generateReport}
                 </span>
               )}
             </button>
@@ -155,7 +160,7 @@ export function Sidebar({
             >
               <span className="flex items-center justify-center gap-2">
                 <DownloadIcon />
-                Download DOCX
+                {t.sidebar.downloadDocx}
               </span>
             </button>
 
@@ -168,7 +173,7 @@ export function Sidebar({
             >
               <span className="flex items-center justify-center gap-2">
                 <ResetIcon />
-                Reset Chat
+                {t.sidebar.resetChat}
               </span>
             </button>
           </>

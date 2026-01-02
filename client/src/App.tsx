@@ -1,8 +1,9 @@
 // NotebookLM Research Assistant - 메인 앱 컴포넌트
 import { Header, Sidebar, ChatArea, MessageInput, ToastContainer } from './components';
-import { useResearchSession } from './hooks';
+import { useLocale, useResearchSession } from './hooks';
 
 function App() {
+  const { t } = useLocale();
   const {
     notebooks,
     selectedNotebook,
@@ -51,7 +52,7 @@ function App() {
             <MessageInput
               onSend={sendMessage}
               disabled={isSendingMessage}
-              placeholder="Ask a question about your notebook..."
+              placeholder={t.messageInput.sessionPlaceholder}
             />
           )}
         </main>

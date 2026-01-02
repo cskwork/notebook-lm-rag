@@ -1,11 +1,16 @@
 // 앱 헤더 컴포넌트
 import type { Session } from '../types';
+import { useLocale } from '../hooks';
 
 interface HeaderProps {
   session: Session | null;
 }
 
 export function Header({ session }: HeaderProps) {
+  const { locale, setLocale, t } = useLocale();
+
+  const statusLabel = session ? t.status[session.status] : t.status.none;
+
   return (
     <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -25,30 +30,63 @@ export function Header({ session }: HeaderProps) {
           </svg>
         </div>
         <h1 className="text-xl font-semibold text-gray-900">
-          NotebookLM Research Assistant
+          {t.appName}
         </h1>
       </div>
 
-      {session && (
-        <div className="flex items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                session.status === 'active'
-                  ? 'bg-green-500'
-                  : session.status === 'error'
-                  ? 'bg-red-500'
-                  : 'bg-gray-400'
-              }`}
-            />
-            <span className="capitalize">{session.status}</span>
+      <div className="flex items-center gap-6 text-sm text-gray-600">
+        {session && (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  session.status === 'active'
+                    ? 'bg-green-500'
+                    : session.status === 'error'
+                    ? 'bg-red-500'
+                    : 'bg-gray-400'
+                }`}
+              />
+              <span className="capitalize">{statusLabel}</span>
+            </div>
+            <div className="text-gray-400">|</div>
+            <div>
+              {t.header.sessionLabel}:{' '}
+              <span className="font-medium text-gray-700">{session.id.slice(0, 8)}</span>
+            </div>
           </div>
-          <div className="text-gray-400">|</div>
-          <div>
-            Session: <span className="font-medium text-gray-700">{session.id.slice(0, 8)}</span>
+        )}
+
+        <div className="flex items-center gap-2">
+          <span className="text-gray-500">{t.header.languageLabel}</span>
+          <div className="flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+            <button
+              type="button"
+              onClick={() => setLocale('en')}
+              className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                locale === 'en'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              aria-pressed={locale === 'en'}
+            >
+              {t.header.languageOptions.en}
+            </button>
+            <button
+              type="button"
+              onClick={() => setLocale('ko')}
+              className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                locale === 'ko'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+              aria-pressed={locale === 'ko'}
+            >
+              {t.header.languageOptions.ko}
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </header>
   );
 }
