@@ -1,5 +1,16 @@
 # Changelog 2026-01-02
 
+## 채팅 응답 마크다운 렌더링
+
+### 수정된 파일
+- `client/src/components/ChatArea.tsx` - assistant 메시지에 Markdown(GFM) 렌더링 적용
+- `client/src/main.tsx` - 코드 하이라이트 테마 로드
+- `client/package.json` - 마크다운/하이라이트 의존성 추가
+
+### 기능
+- 테이블, 작업 목록, 코드 블록 포함한 Markdown 표시
+- 링크 `noopener noreferrer` 적용 및 코드 문법 하이라이트
+
 ## Frontend UI 구현 - NotebookLM Research Assistant
 
 ### 추가된 파일

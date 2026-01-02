@@ -1,5 +1,9 @@
 // 채팅 영역 컴포넌트
 import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import rehypeSanitize, { defaultSchema } from 'rehype-sanitize';
 import type { Message } from '../types';
 import { useLocale } from '../hooks';
 
@@ -7,6 +11,67 @@ interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
   hasSession: boolean;
+}
+
+const markdownSchema = {
+  ...defaultSchema,
+  tagNames: [...(defaultSchema.tagNames || []), 'input'],
+  attributes: {
+    ...defaultSchema.attributes,
+    a: [...(defaultSchema.attributes?.a || []), ['target'], ['rel']],
+    code: [...(defaultSchema.attributes?.code || []), ['className']],
+    span: [...(defaultSchema.attributes?.span || []), ['className']],
+    input: ['type', 'checked', 'disabled'],
+  },
+};
+
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      rehypePlugins={[rehypeHighlight, [rehypeSanitize, markdownSchema]]}
+      components={{
+        a: ({ ...props }) => (
+          <a
+            {...props}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary-600 underline break-words"
+          />
+        ),
+        p: ({ ...props }) => <p {...props} className="mb-3 last:mb-0" />,
+        ul: ({ ...props }) => <ul {...props} className="mb-3 list-disc pl-5 last:mb-0" />,
+        ol: ({ ...props }) => <ol {...props} className="mb-3 list-decimal pl-5 last:mb-0" />,
+        li: ({ ...props }) => <li {...props} className="mb-1 last:mb-0" />,
+        blockquote: ({ ...props }) => (
+          <blockquote {...props} className="mb-3 border-l-2 border-gray-300 pl-3 text-gray-700" />
+        ),
+        pre: ({ ...props }) => (
+          <pre {...props} className="mb-3 overflow-x-auto rounded bg-gray-50 p-3 text-xs leading-relaxed" />
+        ),
+        code: ({ inline, className, ...props }) =>
+          inline ? (
+            <code
+              {...props}
+              className="rounded bg-gray-200 px-1 py-0.5 text-xs font-mono text-gray-800"
+            />
+          ) : (
+            <code {...props} className={className} />
+          ),
+        table: ({ ...props }) => (
+          <table {...props} className="mb-3 w-full border-collapse text-xs" />
+        ),
+        th: ({ ...props }) => (
+          <th {...props} className="border border-gray-200 bg-gray-50 px-2 py-1 text-left" />
+        ),
+        td: ({ ...props }) => <td {...props} className="border border-gray-200 px-2 py-1 align-top" />,
+        hr: ({ ...props }) => <hr {...props} className="my-3 border-gray-200" />,
+        input: ({ ...props }) => <input {...props} className="mr-2 align-middle" />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 export function ChatArea({ messages, isLoading, hasSession }: ChatAreaProps) {
@@ -151,7 +216,13 @@ function MessageBubble({
           <ThinkingSection thinking={message.thinking} label={labels.queryDetails} />
         )}
 
-        <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+        {isUser ? (
+          <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
+        ) : (
+          <div className="text-sm leading-relaxed">
+            <MarkdownContent content={message.content} />
+          </div>
+        )}
 
         {message.sources && message.sources.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-200">

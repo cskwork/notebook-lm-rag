@@ -50,4 +50,5 @@ cd "C:\Users\a\.claude\skills\notebooklm-skill"
 - Korean font: use "맑은 고딕" for Word documents
 - docx module must be installed locally: `npm install docx`
 - UI 언어 설정은 localStorage 키 `ui-language`로 관리
+- assistant 마크다운 렌더링은 react-markdown + remark-gfm + rehype-sanitize + rehype-highlight 조합
 </insight>
