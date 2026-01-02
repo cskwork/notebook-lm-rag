@@ -1,5 +1,5 @@
 // 채팅 영역 컴포넌트
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Message } from '../types';
 
 interface ChatAreaProps {
@@ -76,6 +76,35 @@ export function ChatArea({ messages, isLoading, hasSession }: ChatAreaProps) {
   );
 }
 
+// 쿼리 메타데이터 접기/펼치기 컴포넌트
+function ThinkingSection({ thinking }: { thinking: string }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="mb-2 border-b border-gray-200 pb-2">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        <svg
+          className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        <span>Query Details</span>
+      </button>
+      {isExpanded && (
+        <pre className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600 overflow-x-auto max-h-48 overflow-y-auto">
+          {thinking}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === 'user';
 
@@ -98,6 +127,9 @@ function MessageBubble({ message }: { message: Message }) {
             <span className="text-xs font-medium text-gray-500">Assistant</span>
           </div>
         )}
+
+        {/* 쿼리 메타데이터 (접힌 상태) */}
+        {!isUser && message.thinking && <ThinkingSection thinking={message.thinking} />}
 
         <div className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</div>
 

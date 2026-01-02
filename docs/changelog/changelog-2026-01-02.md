@@ -62,3 +62,19 @@
 - `client/src/services/api.ts` - deleteSession API 추가
 - `src/session/session-manager.ts` - 컨텍스트 최근 3개 제한 + deleteSession 메서드
 - `src/api/sessions.ts` - DELETE /:id 엔드포인트 추가
+
+---
+
+## 쿼리 메타데이터 접기 기능
+
+### 문제
+NotebookLM 쿼리 응답이 JSON 형태로 전체 표시되어 가독성 저하
+
+### 수정
+- `client/src/types/index.ts` - Message 인터페이스에 `thinking` 필드 추가
+- `client/src/services/api.ts` - JSON 응답에서 answer와 메타데이터 분리 (`parseNotebookResponse`)
+- `client/src/components/ChatArea.tsx` - 접기/펼치기 가능한 `ThinkingSection` 컴포넌트 추가
+
+### 동작
+- 응답의 실제 답변(answer)만 메인 콘텐츠로 표시
+- 쿼리 메타데이터(notebook, question, timestamp)는 "Query Details" 버튼으로 접기/펼치기

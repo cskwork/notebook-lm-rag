@@ -70,12 +70,14 @@ class ApiService {
           content: qa.question,
           timestamp: qa.timestamp,
         });
-        // Assistant message
+        // Assistant message - answer와 메타데이터 분리
+        const { content, thinking } = this.parseNotebookResponse(qa.answer);
         messages.push({
           id: `${qa.id}-a`,
           role: 'assistant',
-          content: qa.answer,
+          content,
           timestamp: qa.timestamp,
+          thinking,
         });
       });
     }
@@ -126,6 +128,24 @@ class ApiService {
     });
   }
 
+  // NotebookLM 쿼리 응답에서 answer와 메타데이터 분리
+  private parseNotebookResponse(responseText: string): { content: string; thinking?: string } {
+    try {
+      // JSON 응답인지 확인 (NotebookLM 쿼리 결과)
+      const parsed = JSON.parse(responseText);
+      if (parsed && typeof parsed.answer === 'string') {
+        // answer 필드가 있으면 메타데이터와 분리
+        return {
+          content: parsed.answer,
+          thinking: JSON.stringify(parsed, null, 2),
+        };
+      }
+    } catch {
+      // JSON이 아닌 경우 무시
+    }
+    return { content: responseText };
+  }
+
   // 메시지 전송
   async sendMessage(sessionId: string, data: SendMessageRequest): Promise<{ userMessage: Message; assistantMessage: Message }> {
     const response = await this.request<BackendMessageResponse>(`/sessions/${sessionId}/message`, {
@@ -141,11 +161,15 @@ class ApiService {
       timestamp: response.qaEntry?.timestamp || timestamp,
     };
 
+    // 응답에서 answer와 메타데이터 분리
+    const { content, thinking } = this.parseNotebookResponse(response.response);
+
     const assistantMessage: Message = {
       id: response.qaEntry?.id ? `${response.qaEntry.id}-a` : `msg-${Date.now()}-a`,
       role: 'assistant',
-      content: response.response,
+      content,
       timestamp: response.qaEntry?.timestamp || timestamp,
+      thinking,
     };
 
     return { userMessage, assistantMessage };
