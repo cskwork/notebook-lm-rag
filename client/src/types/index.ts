@@ -51,3 +51,20 @@ export interface ApiError {
   error: string;
   message?: string;
 }
+
+// 채팅 히스토리 엔트리 (목록 표시용 메타데이터)
+export interface HistoryEntry {
+  id: string;
+  notebookId: string;
+  notebookName: string;
+  messageCount: number;
+  lastMessagePreview: string;
+  createdAt: string;
+  lastUsedAt: string;
+}
+
+// 히스토리에 저장되는 전체 세션 데이터
+export interface HistoryStoredSession {
+  session: Session;
+  selectedNotebook: Notebook;
+}

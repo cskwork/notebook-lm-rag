@@ -1,6 +1,7 @@
 // 사이드바 컴포넌트 - 노트북 선택 및 세션 컨트롤
-import type { Notebook, Session } from '../types';
+import type { Notebook, Session, HistoryEntry } from '../types';
 import { useLocale } from '../hooks';
+import { ChatHistory } from './ChatHistory';
 
 interface SidebarProps {
   notebooks: Notebook[];
@@ -14,6 +15,9 @@ interface SidebarProps {
   onGenerateDoc: () => void;
   onDownloadDoc: () => void;
   onResetSession: () => void;
+  chatHistory: HistoryEntry[];
+  onLoadFromHistory: (id: string) => void;
+  onDeleteFromHistory: (id: string) => void;
 }
 
 export function Sidebar({
@@ -28,6 +32,9 @@ export function Sidebar({
   onGenerateDoc,
   onDownloadDoc,
   onResetSession,
+  chatHistory,
+  onLoadFromHistory,
+  onDeleteFromHistory,
 }: SidebarProps) {
   const { t } = useLocale();
   const messageCount = session?.messages.filter((m) => m.role === 'user').length ?? 0;
@@ -35,6 +42,14 @@ export function Sidebar({
 
   return (
     <aside className="w-72 bg-gray-50 border-r border-gray-200 flex flex-col">
+      {/* 채팅 히스토리 */}
+      <ChatHistory
+        history={chatHistory}
+        currentSessionId={session?.id ?? null}
+        onSelect={onLoadFromHistory}
+        onDelete={onDeleteFromHistory}
+      />
+
       {/* 노트북 선택 */}
       <div className="p-4 border-b border-gray-200">
         <label

@@ -20,6 +20,9 @@ function App() {
     downloadDocument,
     dismissToast,
     resetSession,
+    chatHistory,
+    loadFromHistory,
+    deleteFromHistory,
   } = useResearchSession();
 
   return (
@@ -39,6 +42,9 @@ function App() {
           onGenerateDoc={generateDocument}
           onDownloadDoc={downloadDocument}
           onResetSession={resetSession}
+          chatHistory={chatHistory}
+          onLoadFromHistory={loadFromHistory}
+          onDeleteFromHistory={deleteFromHistory}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">

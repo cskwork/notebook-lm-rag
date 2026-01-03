@@ -62,6 +62,14 @@ export const translations = {
       downloadFailed: 'Failed to download document',
       sessionReset: 'Session reset',
       resetFailed: 'Failed to reset session',
+      historyLoadFailed: 'Failed to load session from history',
+    },
+    chatHistory: {
+      title: 'Chat History',
+      empty: 'No chat history',
+      qaCount: '{count} Q&As',
+      delete: 'Delete',
+      noMessages: 'No messages',
     },
   },
   ko: {
@@ -123,6 +131,14 @@ export const translations = {
       downloadFailed: '문서 다운로드에 실패했습니다.',
       sessionReset: '세션이 초기화되었습니다.',
       resetFailed: '세션 초기화에 실패했습니다.',
+      historyLoadFailed: '히스토리에서 세션을 불러오지 못했습니다.',
+    },
+    chatHistory: {
+      title: '채팅 기록',
+      empty: '채팅 기록 없음',
+      qaCount: '{count}개 Q&A',
+      delete: '삭제',
+      noMessages: '메시지 없음',
     },
   },
 } as const;

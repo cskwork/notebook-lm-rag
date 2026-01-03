@@ -1,9 +1,10 @@
 // 연구 세션 관리 훅
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { Notebook, Session, Message } from '../types';
+import type { Notebook, Session, Message, HistoryEntry } from '../types';
 import type { ToastMessage } from '../components';
 import { api } from '../services/api';
 import { useLocale } from './useLocale';
+import { useChatHistory } from './useChatHistory';
 
 const STORAGE_KEY = 'research-session';
 
@@ -28,6 +29,9 @@ interface UseResearchSessionReturn {
   downloadDocument: () => Promise<void>;
   dismissToast: (id: string) => void;
   resetSession: () => Promise<void>;
+  chatHistory: HistoryEntry[];
+  loadFromHistory: (id: string) => void;
+  deleteFromHistory: (id: string) => void;
 }
 
 export function useResearchSession(): UseResearchSessionReturn {
@@ -41,6 +45,15 @@ export function useResearchSession(): UseResearchSessionReturn {
   const [isGeneratingDoc, setIsGeneratingDoc] = useState(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const isInitialLoad = useRef(true);
+
+  // 채팅 히스토리 훅
+  const {
+    history: chatHistory,
+    saveSession: saveToHistory,
+    loadSession: loadFromHistoryStorage,
+    deleteSession: deleteFromHistory,
+    updateLastUsed,
+  } = useChatHistory();
 
   // localStorage에서 상태 복원
   useEffect(() => {
@@ -132,7 +145,7 @@ export function useResearchSession(): UseResearchSessionReturn {
 
   // 메시지 전송
   const sendMessage = useCallback(async (message: string) => {
-    if (!session) return;
+    if (!session || !selectedNotebook) return;
 
     // 사용자 메시지 즉시 추가 (낙관적 업데이트)
     const userMessage: Message = {
@@ -155,15 +168,17 @@ export function useResearchSession(): UseResearchSessionReturn {
       setIsSendingMessage(true);
       const { assistantMessage } = await api.sendMessage(session.id, { message });
 
-      // 어시스턴트 응답 추가
-      setSession((prev) =>
-        prev
-          ? {
-              ...prev,
-              messages: [...prev.messages, assistantMessage],
-            }
-          : null
-      );
+      // 어시스턴트 응답 추가 및 히스토리 저장
+      setSession((prev) => {
+        if (!prev) return null;
+        const updatedSession = {
+          ...prev,
+          messages: [...prev.messages, assistantMessage],
+        };
+        // 히스토리에 저장
+        saveToHistory(updatedSession, selectedNotebook);
+        return updatedSession;
+      });
     } catch (error) {
       console.error('Failed to send message:', error);
       addToast('error', getErrorMessage(error, t.toasts.sendMessageFailed));
@@ -180,7 +195,7 @@ export function useResearchSession(): UseResearchSessionReturn {
     } finally {
       setIsSendingMessage(false);
     }
-  }, [session, addToast, getErrorMessage, t]);
+  }, [session, selectedNotebook, addToast, getErrorMessage, t, saveToHistory]);
 
   // 문서 생성
   const generateDocument = useCallback(async () => {
@@ -237,6 +252,18 @@ export function useResearchSession(): UseResearchSessionReturn {
     addToast('success', t.toasts.sessionReset);
   }, [session, addToast, t]);
 
+  // 히스토리에서 세션 로드
+  const loadFromHistory = useCallback((id: string) => {
+    const stored = loadFromHistoryStorage(id);
+    if (stored) {
+      setSession(stored.session);
+      setSelectedNotebook(stored.selectedNotebook);
+      updateLastUsed(id);
+    } else {
+      addToast('error', t.toasts.historyLoadFailed);
+    }
+  }, [loadFromHistoryStorage, updateLastUsed, addToast, t]);
+
   return {
     notebooks,
     selectedNotebook,
@@ -253,5 +280,8 @@ export function useResearchSession(): UseResearchSessionReturn {
     downloadDocument,
     dismissToast,
     resetSession,
+    chatHistory,
+    loadFromHistory,
+    deleteFromHistory,
   };
 }
