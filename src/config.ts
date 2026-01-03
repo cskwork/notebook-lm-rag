@@ -14,5 +14,8 @@ export const CONFIG = {
   OUTPUT_DIR: path.join(path.dirname(__dirname), 'output'),
 
   // Claude model
-  CLAUDE_MODEL: 'claude-sonnet-4-5-20250929'
+  CLAUDE_MODEL: 'claude-sonnet-4-5-20250929',
+
+  // Extended thinking budget (tokens)
+  MAX_THINKING_TOKENS: 4000
 } as const;

@@ -220,21 +220,22 @@ export function useResearchSession(): UseResearchSessionReturn {
     }
   }, [session, addToast, getErrorMessage, t]);
 
-  // 세션 초기화
+  // 세션 초기화 (서버 세션 없어도 로컬 상태는 정리)
   const resetSession = useCallback(async () => {
     try {
       if (session) {
         await api.deleteSession(session.id);
       }
-      setSession(null);
-      setSelectedNotebook(null);
-      localStorage.removeItem(STORAGE_KEY);
-      addToast('success', t.toasts.sessionReset);
     } catch (error) {
-      console.error('Failed to reset session:', error);
-      addToast('error', getErrorMessage(error, t.toasts.resetFailed));
+      // 서버에 세션이 없어도 로컬 정리는 진행
+      console.warn('Server session already gone:', error);
     }
-  }, [session, addToast, getErrorMessage, t]);
+    // 항상 로컬 상태 정리
+    setSession(null);
+    setSelectedNotebook(null);
+    localStorage.removeItem(STORAGE_KEY);
+    addToast('success', t.toasts.sessionReset);
+  }, [session, addToast, t]);
 
   return {
     notebooks,

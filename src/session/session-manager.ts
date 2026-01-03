@@ -60,6 +60,7 @@ export class SessionManager {
       options: {
         model: CONFIG.CLAUDE_MODEL,
         systemPrompt: SYSTEM_PROMPT,
+        maxThinkingTokens: CONFIG.MAX_THINKING_TOKENS,
         mcpServers: {
           'notebooklm-rag': notebookMcpServer
         },
