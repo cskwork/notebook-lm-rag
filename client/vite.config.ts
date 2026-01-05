@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    allowedHosts: ['notebooklm.agentic-worker.store'],
     proxy: {
       '/api': {
         target: 'http://localhost:5175',
