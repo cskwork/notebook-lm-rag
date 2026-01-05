@@ -1,4 +1,6 @@
 import { spawn } from 'child_process';
+import * as path from 'path';
+import * as os from 'os';
 import { CONFIG } from '../config.js';
 
 export interface PythonResult {
@@ -8,8 +10,11 @@ export interface PythonResult {
 
 export function runPythonScript(scriptName: string, args: string[]): Promise<PythonResult> {
   return new Promise((resolve) => {
-    const pythonPath = `${CONFIG.NOTEBOOKLM_SKILL_DIR}\\.venv\\Scripts\\python.exe`;
-    const scriptPath = `${CONFIG.NOTEBOOKLM_SKILL_DIR}\\scripts\\${scriptName}`;
+    const isWindows = os.platform() === 'win32';
+    const pythonPath = isWindows
+      ? path.join(CONFIG.NOTEBOOKLM_SKILL_DIR, '.venv', 'Scripts', 'python.exe')
+      : path.join(CONFIG.NOTEBOOKLM_SKILL_DIR, '.venv', 'bin', 'python');
+    const scriptPath = path.join(CONFIG.NOTEBOOKLM_SKILL_DIR, 'scripts', scriptName);
 
     const proc = spawn(pythonPath, [scriptPath, ...args], {
       cwd: CONFIG.NOTEBOOKLM_SKILL_DIR
