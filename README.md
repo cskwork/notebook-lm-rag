@@ -89,11 +89,12 @@ python scripts/auth_manager.py setup
 ### Running
 
 ```bash
-# Start backend (port 3000)
+# Start backend (port 5175)
 npm run dev
 
 # Start frontend (port 5173)
-cd client && npm run dev
+cd client
+npm run dev
 ```
 
 ## Usage

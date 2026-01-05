@@ -30,6 +30,7 @@ cd "C:\Users\a\.claude\skills\notebooklm-skill"
 | ID | Name | URL |
 |----|------|-----|
 | ai-digital-textbook-platform-(aidt) | AI Digital Textbook Platform | notebook/a0c47678-7504-469f-bc51-d09a4da22498 |
+| aidt-디지털교육-혁신백서 | AIDT 디지털교육 혁신백서 | notebook/b1cf9dc4-9000-466c-862b-328d9c44630f |
 
 ## Document Generation (docx skill)
 
@@ -52,4 +53,5 @@ cd "C:\Users\a\.claude\skills\notebooklm-skill"
 - UI 언어 설정은 localStorage 키 `ui-language`로 관리
 - assistant 마크다운 렌더링은 react-markdown + remark-gfm + rehype-sanitize + rehype-highlight 조합
 - NotebookLM 도구 출력은 응답과 분리해 thinking으로 저장하면 채팅 본문에 JSON이 노출되지 않음
+- start.sh는 루트와 client 의존성을 먼저 설치해야 vite 누락 오류를 피할 수 있음
 </insight>

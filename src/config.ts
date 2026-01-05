@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const CONFIG = {
-  PORT: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+  PORT: process.env.PORT ? parseInt(process.env.PORT) : 5175,
 
   // NotebookLM skill paths
   NOTEBOOKLM_SKILL_DIR: 'C:\\Users\\a\\.claude\\skills\\notebooklm-skill',
